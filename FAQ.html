@@ -40,6 +40,35 @@
       font-size: 15px;
     }
 
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .home-btn {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border-radius: 10px;
+      background: #ffffff;
+      border: 1px solid #cfd6df;
+      color: #12345b;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 800;
+      transition: 0.2s ease;
+    }
+
+    .home-btn:hover {
+      background: #eef4fa;
+      border-color: #315b8a;
+    }
+
     .search-panel {
       background: #ffffff;
       border: 1px solid #e5e7eb;
@@ -227,6 +256,14 @@
         font-size: 26px;
       }
 
+      .header-top {
+        flex-direction: column;
+      }
+
+      .home-btn {
+        width: 100%;
+      }
+
       .search-row {
         flex-direction: column;
       }
@@ -248,8 +285,17 @@
 <body>
   <main class="app">
     <header class="header">
-      <h1>업무 FAQ 검색</h1>
-      <p>질문이나 키워드를 입력하거나 분류를 선택해 필요한 FAQ를 찾아보세요.</p>
+      <div class="header-top">
+        <div>
+          <h1>업무 FAQ 검색</h1>
+          <p>질문이나 키워드를 입력하거나 분류를 선택해 필요한 FAQ를 찾아보세요.</p>
+        </div>
+        <a
+          class="home-btn"
+          href="https://kfcc011-creator.github.io/mg260910/"
+          aria-label="홈으로 돌아가기"
+        >홈으로 돌아가기</a>
+      </div>
     </header>
 
     <section class="search-panel" aria-label="FAQ 검색 및 분류">
