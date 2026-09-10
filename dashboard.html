@@ -17,6 +17,8 @@
     button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:600}
     button:hover{border-color:#b7c8d8;background:#f8fbfd}
     .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+    .rate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+    .rate-highlight{border-top:3px solid var(--blue)}
     .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(23,50,77,.04)}
     .label{font-size:12px;color:var(--muted);margin-bottom:8px}
     .value{font-size:28px;font-weight:700}
@@ -40,8 +42,8 @@
     .status{font-size:12px;color:var(--muted)}
     .error{display:none;margin:0 0 15px;padding:11px 13px;border-radius:8px;background:#fff0f0;color:#9a2e24;border:1px solid #f3c7c3;font-size:13px}
     .foot{font-size:12px;color:var(--muted);text-align:right;margin-top:8px}
-    @media (max-width: 1000px){.grid{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr}}
-    @media (max-width: 620px){.wrap{padding:16px}.grid{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}input{width:100%;min-width:0}}
+    @media (max-width: 1000px){.grid,.rate-grid{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr}}
+    @media (max-width: 620px){.wrap{padding:16px}.grid,.rate-grid{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}input{width:100%;min-width:0}}
   </style>
 </head>
 <body>
@@ -63,6 +65,16 @@
     <div class="card"><div class="label">예적금 잔액</div><div class="value" id="depositTotal">-</div><div class="unit">원</div></div>
     <div class="card"><div class="label">대출 총액</div><div class="value" id="loanTotal">-</div><div class="unit">원</div></div>
     <div class="card"><div class="label">거래 건수</div><div class="value" id="transactionCount">-</div><div class="unit">건</div></div>
+  </section>
+
+  <section class="section">
+    <h2 style="margin:0 0 10px">은행권 정기예금 금리 요약</h2>
+    <div class="rate-grid">
+      <div class="card rate-highlight"><div class="label">평균 기본금리</div><div class="value" id="avgBaseRate">-</div><div class="unit">%</div></div>
+      <div class="card rate-highlight"><div class="label">평균 최고우대금리</div><div class="value" id="avgMaxRate">-</div><div class="unit">%</div></div>
+      <div class="card rate-highlight"><div class="label">최고 금리 기관</div><div class="value" id="topRateInstitution" style="font-size:20px">-</div><div class="unit" id="topRateValue">-</div></div>
+      <div class="card rate-highlight"><div class="label">최고-최저 금리차</div><div class="value" id="rateSpread">-</div><div class="unit">%p</div></div>
+    </div>
   </section>
 
   <section class="charts">
@@ -101,8 +113,14 @@
   </section>
 
   <section class="section card">
-    <div class="toolbar"><h2>은행권 금리 비교</h2><span class="status" id="rateMeta"></span></div>
-    <div class="table-wrap"><table><thead><tr><th>조사월</th><th>기관</th><th>권역</th><th>상품명</th><th>기본금리</th><th>최고우대금리</th><th>우대조건</th></tr></thead><tbody id="rateTable"></tbody></table></div>
+    <div class="toolbar">
+      <h2>은행권 금리 비교</h2>
+      <div class="toolbar-left">
+        <select id="rateSectorFilter"><option value="">전체 권역</option></select>
+        <span class="status" id="rateMeta"></span>
+      </div>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>조사월</th><th>기관</th><th>권역</th><th>상품명</th><th>기본금리</th><th>최고우대금리</th><th>우대폭</th><th>우대조건</th></tr></thead><tbody id="rateTable"></tbody></table></div>
   </section>
 
   <div class="foot">마지막 조회: <span id="lastUpdated">-</span></div>
@@ -143,10 +161,12 @@
       document.getElementById('loanTotal').textContent = money(loans.reduce((s,x)=>s+Number(x.loan_amount||0),0));
       document.getElementById('transactionCount').textContent = num(tx.count || 0);
 
+      renderRateSummary();
+
       populateFilters();
       renderCharts(); renderTables();
-      const maxRate = rates.length ? rates[0].survey_month : '-';
-      document.getElementById('rateMeta').textContent = maxRate ? `최근 조사월: ${maxRate}` : '';
+      const maxRate = rates.length ? rates.reduce((m,r)=>!m || String(r.survey_month)>m ? String(r.survey_month) : m, '') : '';
+      document.getElementById('rateMeta').textContent = rates.length ? `최근 조사월: ${dateFmt(maxRate)} · ${rates.length}건 조회` : '금리 데이터가 없습니다.';
       document.getElementById('lastUpdated').textContent = new Date().toLocaleString('ko-KR');
       setStatus(`조회 완료 · 조합원 ${members.length}명 / 지점 ${branches.length}개 / 계좌 ${deposits.length}개 / 대출 ${loans.length}건 / 금리 ${rates.length}건`);
     } catch(e){
@@ -167,6 +187,9 @@
     const lf=document.getElementById('loanFilter');
     const statuses=[...new Set(loans.map(x=>x.status).filter(Boolean))];
     lf.innerHTML='<option value="">전체 상태</option>'+statuses.map(s=>`<option value="${s}">${s}</option>`).join('');
+    const rf=document.getElementById('rateSectorFilter');
+    const sectors=[...new Set(rates.map(x=>x.sector).filter(Boolean))];
+    rf.innerHTML='<option value="">전체 권역</option>'+sectors.map(s=>`<option value="${s}">${s}</option>`).join('');
   }
 
   function renderCharts(){
@@ -180,8 +203,9 @@
     const byDepBranch = branches.map(b=>({name:b.branch_name, value:deposits.filter(d=>Number(d.branch_id)===Number(b.branch_id)).reduce((s,x)=>s+Number(x.balance||0),0)}));
     charts.deposit = new Chart(document.getElementById('depositBranchChart'),{type:'bar',data:{labels:byDepBranch.map(x=>x.name),datasets:[{label:'잔액',data:byDepBranch.map(x=>x.value),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>new Intl.NumberFormat('ko-KR',{notation:'compact'}).format(v)+'원'}}}}});
 
-    const latest = rates.slice().sort((a,b)=>String(a.survey_month).localeCompare(String(b.survey_month))).slice(-10);
-    charts.rate = new Chart(document.getElementById('rateChart'),{type:'bar',data:{labels:latest.map(x=>x.institution_name),datasets:[{label:'최고우대금리',data:latest.map(x=>Number(x.max_preferential_rate||0)),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>v+'%'}}}}});
+    const latestMonth = rates.reduce((m,r)=>!m || String(r.survey_month)>m ? String(r.survey_month) : m, '');
+    const latest = rates.filter(r=>String(r.survey_month)===latestMonth).sort((a,b)=>Number(b.max_preferential_rate||0)-Number(a.max_preferential_rate||0));
+    charts.rate = new Chart(document.getElementById('rateChart'),{type:'bar',data:{labels:latest.map(x=>x.institution_name),datasets:[{label:'기본금리',data:latest.map(x=>Number(x.base_rate||0)),borderWidth:0},{label:'최고우대금리',data:latest.map(x=>Number(x.max_preferential_rate||0)),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:false,ticks:{callback:v=>v+'%'}}}}});
   }
 
   function renderTables(){ renderMembers(); renderLoans(); renderRates(); }
@@ -202,14 +226,33 @@
     document.getElementById('loanTable').innerHTML=rows.map(l=>`<tr><td>${l.loan_id}</td><td>${memberName(l.member_id)}</td><td>${branchName(l.branch_id)}</td><td>${l.loan_type||'-'}</td><td>${money(l.loan_amount)}원</td><td>${l.interest_rate ?? '-'}%</td><td>${dateFmt(l.start_date)}</td><td>${dateFmt(l.due_date)}</td><td><span class="pill ${String(l.status).includes('연체')?'bad':String(l.status).includes('정상')?'good':''}">${l.status||'-'}</span></td></tr>`).join('') || '<tr><td colspan="9">조회 결과가 없습니다.</td></tr>';
   }
 
+  function renderRateSummary(){
+    if(!rates.length){return;}
+    const avgBase=rates.reduce((s,r)=>s+Number(r.base_rate||0),0)/rates.length;
+    const avgMax=rates.reduce((s,r)=>s+Number(r.max_preferential_rate||0),0)/rates.length;
+    const sorted=[...rates].sort((a,b)=>Number(b.max_preferential_rate||0)-Number(a.max_preferential_rate||0));
+    const top=sorted[0], low=sorted[sorted.length-1];
+    document.getElementById('avgBaseRate').textContent=avgBase.toFixed(2);
+    document.getElementById('avgMaxRate').textContent=avgMax.toFixed(2);
+    document.getElementById('topRateInstitution').textContent=top.institution_name||'-';
+    document.getElementById('topRateValue').textContent=`최고우대 ${Number(top.max_preferential_rate||0).toFixed(2)}%`;
+    document.getElementById('rateSpread').textContent=(Number(top.max_preferential_rate||0)-Number(low.max_preferential_rate||0)).toFixed(2);
+  }
+
   function renderRates(){
-    document.getElementById('rateTable').innerHTML=rates.map(r=>`<tr><td>${dateFmt(r.survey_month)}</td><td>${r.institution_name||'-'}</td><td>${r.sector||'-'}</td><td>${r.product_name||'-'}</td><td>${r.base_rate ?? '-'}%</td><td>${r.max_preferential_rate ?? '-'}%</td><td>${r.preferential_conditions||'-'}</td></tr>`).join('') || '<tr><td colspan="7">데이터가 없습니다.</td></tr>';
+    const sector=document.getElementById('rateSectorFilter').value;
+    const rows=rates.filter(r=>!sector||r.sector===sector);
+    document.getElementById('rateTable').innerHTML=rows.map(r=>{
+      const spread=(Number(r.max_preferential_rate||0)-Number(r.base_rate||0)).toFixed(2);
+      return `<tr><td>${dateFmt(r.survey_month)}</td><td>${r.institution_name||'-'}</td><td>${r.sector||'-'}</td><td>${r.product_name||'-'}</td><td>${r.base_rate ?? '-'}%</td><td><strong>${r.max_preferential_rate ?? '-'}%</strong></td><td>${spread}%p</td><td>${r.preferential_conditions||'-'}</td></tr>`;
+    }).join('') || '<tr><td colspan="8">데이터가 없습니다.</td></tr>';
   }
 
   document.getElementById('refreshBtn').addEventListener('click', loadData);
   document.getElementById('memberSearch').addEventListener('input', renderMembers);
   document.getElementById('branchFilter').addEventListener('change', renderMembers);
   document.getElementById('loanFilter').addEventListener('change', renderLoans);
+  document.getElementById('rateSectorFilter').addEventListener('change', renderRates);
   loadData();
 </script>
 </body>
