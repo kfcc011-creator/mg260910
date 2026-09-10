@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MG MBTI 금융상품 & 결혼 시너지 추천</title>
+<style>
+:root{
+  --mg:#005BAC;
+  --mg-dark:#00437F;
+  --mg-deep:#073A63;
+  --mg-light:#EAF4FC;
+  --mg-soft:#F5FAFE;
+  --text:#17324D;
+  --muted:#687B8C;
+  --line:#D9E6F0;
+  --white:#FFFFFF;
+  --bg:#F4F8FB;
+  --success:#087F5B;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;
+  color:var(--text);
+  background:linear-gradient(180deg,#EFF6FB 0,#F8FBFD 380px,#F4F8FB 100%);
+}
+.wrap{max-width:1160px;margin:0 auto;padding:36px 20px 64px}
+.hero{
+  position:relative;overflow:hidden;
+  border-radius:24px;
+  padding:34px;
+  background:linear-gradient(135deg,var(--mg-deep) 0%,var(--mg) 74%,#1474C4 100%);
+  color:#fff;
+  box-shadow:0 18px 50px rgba(0,91,172,.18);
+}
+.hero:after{
+  content:"MG";
+  position:absolute;right:-20px;bottom:-55px;
+  font-size:190px;font-weight:900;letter-spacing:-.08em;
+  color:rgba(255,255,255,.055);
+}
+.brandline{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.brandmark{
+  width:38px;height:38px;border-radius:12px;background:#fff;color:var(--mg);
+  display:flex;align-items:center;justify-content:center;font-weight:1000;font-size:14px
+}
+.brandtext{font-size:13px;font-weight:800;letter-spacing:.04em;opacity:.9}
+h1{font-size:34px;line-height:1.25;margin:0 0 12px}
+.hero p{max-width:760px;line-height:1.7;margin:0;color:rgba(255,255,255,.84)}
+.input-panel{
+  margin-top:24px;position:relative;z-index:1;
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  padding:16px;border-radius:18px;
+  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.17)
+}
+input{
+  flex:1 1 280px;min-width:230px;height:52px;border:0;border-radius:12px;
+  padding:0 16px;outline:none;font-size:18px;font-weight:900;text-transform:uppercase;color:var(--mg-deep)
+}
+button,a.btn{
+  height:52px;border:0;border-radius:12px;padding:0 20px;
+  font-size:14px;font-weight:900;cursor:pointer;text-decoration:none;
+  display:inline-flex;align-items:center;justify-content:center
+}
+.primary{background:#fff;color:var(--mg)}
+.secondary{background:#DDECF7;color:var(--mg-deep)}
+.chips{width:100%;display:flex;gap:7px;flex-wrap:wrap;margin-top:3px}
+.chip{
+  height:auto;padding:7px 10px;border-radius:999px;color:#fff;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.22);font-size:12px
+}
+.empty{
+  margin-top:24px;text-align:center;padding:42px 20px;background:#fff;
+  border:1px dashed #B9CDDC;border-radius:18px;color:var(--muted)
+}
+.section{margin-top:24px}
+.grid{display:grid;grid-template-columns:1.12fr .88fr;gap:18px}
+.card{
+  background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px;
+  box-shadow:0 10px 28px rgba(7,58,99,.05)
+}
+.cardHead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px}
+.card h2{font-size:21px;margin:0 0 6px}
+.sub{font-size:13px;color:var(--muted);line-height:1.6}
+.liveTag{
+  flex:0 0 auto;background:var(--mg-light);color:var(--mg);
+  font-size:11px;font-weight:900;border-radius:999px;padding:7px 10px
+}
+.typeRow{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.badge{
+  min-width:92px;height:50px;border-radius:14px;background:var(--mg-light);color:var(--mg);
+  display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:1000;letter-spacing:.05em
+}
+.persona{font-weight:900;font-size:18px}
+.tagline{font-size:13px;color:var(--muted);margin-top:4px}
+.product{
+  border-top:1px solid var(--line);padding:16px 0;display:grid;grid-template-columns:46px 1fr auto;gap:12px;align-items:start
+}
+.product:first-child{border-top:0}
+.icon{
+  width:44px;height:44px;border-radius:12px;background:var(--mg-soft);
+  display:flex;align-items:center;justify-content:center;font-size:20px
+}
+.productTitle{font-weight:900;color:var(--mg-deep)}
+.productDesc{font-size:13px;line-height:1.55;color:var(--muted);margin-top:4px}
+.realBadge{
+  font-size:10px;font-weight:900;color:var(--success);background:#EAF8F3;
+  border-radius:999px;padding:6px 8px;white-space:nowrap
+}
+.traits{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.trait{padding:7px 10px;border-radius:999px;background:#F1F5F9;font-size:12px;font-weight:800;color:#425466}
+.matches{display:grid;grid-template-columns:1fr;gap:10px}
+.match{
+  border:1px solid var(--line);border-radius:14px;padding:15px;background:#FBFDFE
+}
+.match.best{border-color:#9DC8EB;background:#F2F8FD}
+.matchTop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.match strong{font-size:18px;color:var(--mg-deep)}
+.score{font-size:11px;font-weight:900;color:var(--mg);background:var(--mg-light);padding:6px 8px;border-radius:999px}
+.reason{font-size:12px;color:var(--muted);line-height:1.55;margin-top:7px}
+.productSource{
+  margin-top:18px;padding:15px;border-radius:14px;background:var(--mg-soft);border:1px solid #D8EAF7
+}
+.productSource strong{display:block;font-size:13px;color:var(--mg-deep);margin-bottom:5px}
+.productSource p{font-size:12px;line-height:1.6;color:var(--muted);margin:0 0 10px}
+.sourceBtn{height:38px!important;background:var(--mg);color:#fff!important;padding:0 14px!important;font-size:12px!important}
+.notice{
+  margin-top:18px;padding:14px 16px;border-radius:12px;background:#FFF9E8;
+  border-left:4px solid #E7A500;color:#6E5300;font-size:13px;line-height:1.65
+}
+.footer{text-align:center;color:#7A8B99;font-size:12px;line-height:1.7;margin-top:24px}
+.hidden{display:none}
+@media(max-width:800px){
+  .grid{grid-template-columns:1fr}
+  .product{grid-template-columns:44px 1fr}
+  .realBadge{grid-column:2}
+  .hero{padding:24px}
+  h1{font-size:28px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <div class="brandline">
+      <div class="brandmark">MG</div>
+      <div class="brandtext">새마을금고 스타일 금융 성향 가이드</div>
+    </div>
+    <h1>MBTI로 보는 MG 금융상품 추천</h1>
+    <p>MBTI 성향을 입력하면 현재 MG새마을금고 금융상품몰에서 확인되는 실제 상품을 중심으로 추천하고, 결혼 생활에서 상호보완 시너지가 기대되는 MBTI도 함께 보여줍니다.</p>
+    <div class="input-panel">
+      <input id="mbti" maxlength="4" placeholder="예: ENFP" aria-label="MBTI 입력">
+      <button class="primary" onclick="recommend()">추천 보기</button>
+      <button class="secondary" onclick="resetPage()">초기화</button>
+      <div class="chips" id="chips"></div>
+    </div>
+  </section>
+
+  <div id="empty" class="empty">MBTI를 입력하면 금융상품 및 결혼 시너지 추천 결과가 표시됩니다.</div>
+
+  <section id="result" class="section hidden">
+    <div class="grid">
+      <article class="card">
+        <div class="cardHead">
+          <div>
+            <h2>MG 금융상품 추천</h2>
+            <div class="sub">성향과 상품 구조의 어울림을 기준으로 한 참고용 추천입니다.</div>
+          </div>
+          <span class="liveTag">공식 상품명 반영</span>
+        </div>
+
+        <div class="typeRow">
+          <div class="badge" id="badge"></div>
+          <div>
+            <div class="persona" id="persona"></div>
+            <div class="tagline" id="tagline"></div>
+          </div>
+        </div>
+
+        <div id="products"></div>
+        <div class="traits" id="traits"></div>
+
+        <div class="productSource">
+          <strong>상품 조건은 반드시 최신 정보를 확인하세요.</strong>
+          <p>새마을금고는 개별 법인으로 구성되어 금고별 취급 여부, 금리, 우대조건 등이 달라질 수 있습니다.</p>
+          <a class="btn sourceBtn" href="https://www.kfcc.co.kr/goods/goods01_main.do" target="_blank" rel="noopener">MG 금융상품몰 확인</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cardHead">
+          <div>
+            <h2>결혼 상대 MBTI 시너지</h2>
+            <div class="sub">상호보완성과 생활 균형을 가볍게 참고하는 추천입니다.</div>
+          </div>
+        </div>
+        <div class="matches" id="matches"></div>
+        <div class="notice">MBTI 궁합은 관계의 성공을 보장하지 않습니다. 실제 결혼에서는 가치관, 재정관, 갈등 해결 방식, 생활 습관, 존중과 신뢰가 훨씬 중요합니다.</div>
+      </article>
+    </div>
+
+    <div class="notice"><strong>금융 안내:</strong> 이 페이지는 MBTI를 활용한 교육·오락용 추천 도구이며 개인 맞춤 금융자문이 아닙니다. 실제 가입 전 금리, 수수료, 중도해지 조건, 예금자보호 적용 여부, 본인의 재무상태를 확인하세요.</div>
+  </section>
+
+  <div class="footer">MG새마을금고 공식 서비스가 아닌 데모 웹페이지 · 단일 HTML · 외부 라이브러리 없이 실행 가능</div>
+</div>
+
+<script>
+const allTypes=["ISTJ","ISFJ","INFJ","INTJ","ISTP","ISFP","INFP","INTP","ESTP","ESFP","ENFP","ENTP","ESTJ","ESFJ","ENFJ","ENTJ"];
+
+const base={
+ ISTJ:["원칙형 자산관리자","안정성·계획·예측 가능성을 중시",["계획적","안정 선호","규칙적 관리"]],
+ ISFJ:["안심형 생활금융가","가족·안정·꾸준한 축적을 중시",["가족 중심","안정 선호","꾸준함"]],
+ INFJ:["가치지향 장기설계형","의미·장기목표·일관성을 중시",["장기 관점","가치 중심","신중함"]],
+ INTJ:["전략형 포트폴리오 설계자","효율·분석·장기 최적화를 중시",["분석적","장기 전략","효율 중시"]],
+ ISTP:["실용형 기회포착가","간결함·유동성·실용성을 중시",["실용적","독립적","기민함"]],
+ ISFP:["유연형 행복소비 설계자","현재 만족과 부담 없는 관리를 중시",["유연함","체감가치","자율성"]],
+ INFP:["가치중심 꿈설계형","나만의 목표와 의미를 중시",["가치 중심","이상적","자기주도"]],
+ INTP:["탐구형 금융 최적화가","논리·비교·구조 이해를 중시",["분석적","호기심","독립적"]],
+ ESTP:["민첩형 현금흐름 플레이어","기회·속도·유동성을 중시",["행동적","현실적","기회지향"]],
+ ESFP:["경험형 라이프밸런서","즐거움·체감혜택·간편함을 중시",["사교적","현재지향","체감혜택"]],
+ ENFP:["아이디어형 목표확장가","가능성·경험·성장을 중시",["창의적","유연함","성장지향"]],
+ ENTP:["실험형 금융 탐험가","새로움·비교·아이디어를 중시",["도전적","분석적","변화 선호"]],
+ ESTJ:["성과형 재무관리자","목표·통제·실행력을 중시",["체계적","실행력","목표지향"]],
+ ESFJ:["관계형 생활재무 매니저","가족·공동목표·안정성을 중시",["협력적","생활 중심","안정 추구"]],
+ ENFJ:["성장지원형 재무코치","사람·목표·장기성장을 중시",["관계지향","장기목표","책임감"]],
+ ENTJ:["목표주도형 자산전략가","성과·확장·장기계획을 중시",["전략적","추진력","성과지향"]]
+};
+
+const productSets={
+ safe:[
+  ["🏦","MG더뱅킹정기예금","MG더뱅킹에서 가입 가능한 거치식 예금으로 거래실적에 따른 우대금리 구조를 갖춘 상품입니다."],
+  ["📘","MG주거래우대정기예금","회전주기별 변동금리와 거래실적에 따른 우대금리를 적용하는 상품입니다."],
+  ["🔒","정기예탁금","일정 금액을 일정 기간 예치하고 만기에 원금과 이자를 지급받는 전통적인 거치식 상품입니다."]
+ ],
+ saving:[
+  ["📱","MG더뱅킹자유적금","MG더뱅킹에서 가입 가능하며 거래실적에 따른 우대금리를 제공하는 자유적립식 예금입니다."],
+  ["🎯","MG New정기적금","체크카드·전자금융·자동이체 등 가입 조건에 따라 우대이율이 제공되는 정액적립식 예금입니다."],
+  ["🔁","MG월복리자유적금","매 납입액을 월복리로 계산하고 자유롭게 적립할 수 있는 적금 상품입니다."]
+ ],
+ flexible:[
+  ["📱","MG더뱅킹자유적금","앱에서 가입할 수 있고 자유롭게 적립하는 방식이라 유연한 자금 관리에 어울립니다."],
+  ["💳","MG주거래우대자유적금","체크카드·공과금·급여·연금 등 주거래 실적에 따라 우대이율을 제공하는 자유적립식 상품입니다."],
+  ["🧩","Block예금","거치식 상품이면서 추가입금과 건별인출이 가능한 복합형 예금입니다."]
+ ],
+ growth:[
+  ["📱","MG더뱅킹자유적금","목표를 유연하게 바꾸며 적립하기 좋은 앱 전용 자유적립식 상품입니다."],
+  ["🔁","MG월복리자유적금","자유적립 방식과 월복리 구조를 활용해 장기 저축 습관을 만들기 좋습니다."],
+  ["🎯","MG New정기적금","정기적인 납입과 우대조건 달성을 통해 목표형 저축에 활용하기 좋습니다."]
+ ]
+};
+
+const setMap={
+ ISTJ:"safe",ISFJ:"safe",INFJ:"growth",INTJ:"safe",
+ ISTP:"flexible",ISFP:"flexible",INFP:"growth",INTP:"flexible",
+ ESTP:"flexible",ESFP:"flexible",ENFP:"growth",ENTP:"flexible",
+ ESTJ:"safe",ESFJ:"saving",ENFJ:"growth",ENTJ:"safe"
+};
+
+const matches={
+ ISTJ:[["ESFP","활력 보완"],["ESTP","실행 시너지"],["ISFJ","생활 안정"]],
+ ISFJ:[["ESTP","생활 활력"],["ESFP","정서 보완"],["ISTJ","신뢰 안정"]],
+ INFJ:[["ENTP","관점 확장"],["ENFP","정서 시너지"],["INTJ","미래 설계"]],
+ INTJ:[["ENFP","감성 보완"],["ENTP","지적 시너지"],["INFJ","비전 공유"]],
+ ISTP:[["ESFJ","생활 균형"],["ESTJ","실행력"],["ISFP","편안한 호흡"]],
+ ISFP:[["ENFJ","정서 시너지"],["ESFJ","생활 안정"],["ISTP","자율 존중"]],
+ INFP:[["ENFJ","정서적 지지"],["ENTJ","현실 보완"],["ENFP","가치 공감"]],
+ INTP:[["ENTJ","실행 보완"],["ENFJ","관계 보완"],["ENTP","지적 자극"]],
+ ESTP:[["ISFJ","안정 보완"],["ISTJ","현실 시너지"],["ESFP","활력 공유"]],
+ ESFP:[["ISTJ","안정 보완"],["ISFJ","정서 안정"],["ESTP","에너지 시너지"]],
+ ENFP:[["INTJ","전략 보완"],["INFJ","가치 시너지"],["INFP","감성 공감"]],
+ ENTP:[["INFJ","깊이 보완"],["INTJ","전략 시너지"],["INTP","지적 공감"]],
+ ESTJ:[["ISFP","감성 보완"],["ISTP","실용 시너지"],["ESFJ","생활 파트너십"]],
+ ESFJ:[["ISTP","독립성 보완"],["ISFP","정서 공감"],["ESTJ","생활 안정"]],
+ ENFJ:[["INFP","감성 시너지"],["ISFP","정서 균형"],["INTP","논리 보완"]],
+ ENTJ:[["INTP","지적 시너지"],["INFP","감성 보완"],["INTJ","목표 공감"]]
+};
+
+const reasons={
+ "활력 보완":"안정감과 활동성이 서로의 생활 리듬을 보완할 수 있습니다.",
+ "실행 시너지":"계획성과 행동력이 결합되어 현실적인 의사결정에 강점이 생길 수 있습니다.",
+ "생활 안정":"책임감과 생활 리듬이 비슷해 안정적인 관계를 만들기 쉽습니다.",
+ "생활 활력":"차분함과 추진력이 서로를 보완할 수 있습니다.",
+ "정서 보완":"현실감과 따뜻한 표현이 서로의 부족한 부분을 채울 수 있습니다.",
+ "신뢰 안정":"약속과 책임을 중요하게 여기는 공통점이 있습니다.",
+ "관점 확장":"깊이 있는 사고와 새로운 아이디어가 서로를 자극할 수 있습니다.",
+ "정서 시너지":"감정적 공감과 표현력이 자연스럽게 이어질 수 있습니다.",
+ "미래 설계":"장기적인 비전과 계획을 함께 그리기 좋은 조합입니다.",
+ "감성 보완":"논리와 감성의 균형이 관계에 안정감을 줄 수 있습니다.",
+ "지적 시너지":"아이디어와 분석을 즐기며 깊은 대화를 이어가기 좋습니다.",
+ "비전 공유":"미래와 가치관을 깊이 있게 나누기 좋은 조합입니다.",
+ "생활 균형":"자율성과 관계지향성이 서로의 생활 패턴을 보완할 수 있습니다.",
+ "실행력":"실용성과 추진력이 만나 현실적인 문제 해결에 강점이 있습니다.",
+ "편안한 호흡":"서로의 자율성을 존중하며 부담 적은 관계를 만들기 쉽습니다.",
+ "자율 존중":"서로에게 필요한 공간을 존중하며 편안한 관계를 만들 수 있습니다.",
+ "정서적 지지":"공감과 응원이 풍부해 정서적 지지가 잘 이루어질 수 있습니다.",
+ "현실 보완":"이상과 실행력이 균형을 만들어 서로의 장점을 살릴 수 있습니다.",
+ "가치 공감":"감정과 가치관을 자연스럽게 공유하기 쉬운 편입니다.",
+ "실행 보완":"분석적 사고에 추진력이 더해져 현실적 결정을 돕습니다.",
+ "관계 보완":"논리적 사고와 관계 감각이 서로 균형을 만들 수 있습니다.",
+ "지적 자극":"아이디어와 탐구를 즐기며 지적인 대화를 이어가기 좋습니다.",
+ "안정 보완":"빠른 행동과 세심한 안정감이 균형을 이룰 수 있습니다.",
+ "현실 시너지":"현실적인 판단과 계획성이 잘 결합될 수 있습니다.",
+ "활력 공유":"활동성과 긍정적인 에너지가 잘 맞는 편입니다.",
+ "정서 안정":"따뜻함과 배려가 관계의 안정감을 높일 수 있습니다.",
+ "에너지 시너지":"활동적인 생활 방식과 즉흥성이 잘 맞는 편입니다.",
+ "전략 보완":"아이디어와 장기 전략이 서로를 보완할 수 있습니다.",
+ "가치 시너지":"감정적 공감과 미래 비전을 함께 나누기 좋습니다.",
+ "감성 공감":"자유로운 사고와 감정 표현이 자연스럽게 이어질 수 있습니다.",
+ "깊이 보완":"아이디어의 폭과 깊은 통찰이 서로에게 자극이 됩니다.",
+ "전략 시너지":"창의성과 구조화 능력이 함께 작동하기 좋습니다.",
+ "지적 공감":"토론과 탐구를 즐기는 공통점이 있습니다.",
+ "생활 파트너십":"책임감과 관계 관리 능력이 생활 속에서 잘 결합될 수 있습니다.",
+ "독립성 보완":"관계지향성과 독립성이 서로의 균형을 잡아줄 수 있습니다.",
+ "감성 시너지":"감정적 이해와 가치관 공유가 잘 이루어질 수 있습니다.",
+ "정서 균형":"표현력과 섬세함이 서로를 편안하게 해줄 수 있습니다.",
+ "논리 보완":"공감 능력과 분석력이 서로 부족한 부분을 채울 수 있습니다.",
+ "목표 공감":"비전과 목표를 중시해 장기 계획을 함께 세우기 좋습니다.",
+ "정서 공감":"감정 표현과 관계 중심 성향이 자연스럽게 이어질 수 있습니다.",
+ "생활 안정":"생활의 안정감과 따뜻한 관계를 함께 만들기 좋습니다."
+};
+
+function renderChips(){
+ document.getElementById("chips").innerHTML=allTypes.map(t=>`<button class="chip" onclick="quick('${t}')">${t}</button>`).join("");
+}
+function quick(t){document.getElementById("mbti").value=t;recommend();}
+function recommend(){
+ const t=document.getElementById("mbti").value.trim().toUpperCase();
+ if(!allTypes.includes(t)){alert("올바른 MBTI 4자리를 입력해주세요. 예: ENFP");return;}
+ const b=base[t], ps=productSets[setMap[t]];
+ document.getElementById("badge").textContent=t;
+ document.getElementById("persona").textContent=b[0];
+ document.getElementById("tagline").textContent=b[1];
+ document.getElementById("traits").innerHTML=b[2].map(x=>`<span class="trait">${x}</span>`).join("");
+ document.getElementById("products").innerHTML=ps.map(x=>`
+  <div class="product">
+   <div class="icon">${x[0]}</div>
+   <div><div class="productTitle">${x[1]}</div><div class="productDesc">${x[2]}</div></div>
+   <span class="realBadge">MG 실제 상품</span>
+  </div>`).join("");
+ document.getElementById("matches").innerHTML=matches[t].map((x,i)=>`
+  <div class="match ${i===0?'best':''}">
+   <div class="matchTop"><strong>${x[0]}</strong><span class="score">${i===0?'추천 1순위':'추천 후보'} · ${x[1]}</span></div>
+   <div class="reason">${reasons[x[1]]||"서로 다른 성향이 관계에서 상호보완적으로 작용할 수 있습니다."}</div>
+  </div>`).join("");
+ document.getElementById("empty").classList.add("hidden");
+ document.getElementById("result").classList.remove("hidden");
+ document.getElementById("result").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function resetPage(){
+ document.getElementById("mbti").value="";
+ document.getElementById("result").classList.add("hidden");
+ document.getElementById("empty").classList.remove("hidden");
+}
+document.getElementById("mbti").addEventListener("keydown",e=>{if(e.key==="Enter")recommend();});
+renderChips();
+</script>
+</body>
+</html>
