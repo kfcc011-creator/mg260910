@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supabase 테스트 DB 대시보드</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{--blue:#005BAC;--blue2:#0b74c9;--ink:#17324d;--muted:#6b7b8c;--bg:#f5f7fa;--line:#e2e8ef;--card:#fff;--danger:#c0392b;--green:#218838}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,"Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink)}
+    .wrap{max-width:1400px;margin:0 auto;padding:28px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:20px}
+    h1{margin:0;font-size:25px}
+    .sub{color:var(--muted);font-size:13px;margin-top:6px}
+    button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:600}
+    button:hover{border-color:#b7c8d8;background:#f8fbfd}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(23,50,77,.04)}
+    .label{font-size:12px;color:var(--muted);margin-bottom:8px}
+    .value{font-size:28px;font-weight:700}
+    .unit{font-size:13px;color:var(--muted);margin-left:4px}
+    .charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+    .chartbox{height:330px}
+    .section{margin-bottom:18px}
+    .section h2{font-size:17px;margin:0 0 10px}
+    .toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+    .toolbar-left{display:flex;gap:8px;flex-wrap:wrap}
+    select,input{border:1px solid var(--line);background:white;border-radius:8px;padding:9px 11px;outline:none}
+    input{min-width:230px}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fff}
+    table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+    th,td{padding:10px 12px;border-bottom:1px solid #edf1f5;text-align:left;white-space:nowrap}
+    th{background:#f8fafc;color:#526577;font-weight:700;position:sticky;top:0}
+    tr:hover td{background:#fbfdff}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#eef4fa;color:var(--blue)}
+    .pill.bad{background:#fdeeee;color:var(--danger)}
+    .pill.good{background:#edf8ef;color:var(--green)}
+    .status{font-size:12px;color:var(--muted)}
+    .error{display:none;margin:0 0 15px;padding:11px 13px;border-radius:8px;background:#fff0f0;color:#9a2e24;border:1px solid #f3c7c3;font-size:13px}
+    .foot{font-size:12px;color:var(--muted);text-align:right;margin-top:8px}
+    @media (max-width: 1000px){.grid{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr}}
+    @media (max-width: 620px){.wrap{padding:16px}.grid{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}input{width:100%;min-width:0}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Supabase 테스트 DB 대시보드</h1>
+      <div class="sub">test project · 조회 전용 · 브라우저에서 Supabase 데이터를 직접 조회합니다.</div>
+    </div>
+    <button id="refreshBtn">데이터 새로고침</button>
+  </header>
+
+  <div id="errorBox" class="error"></div>
+  <div class="status" id="status">데이터를 불러오는 중...</div>
+  <div style="height:10px"></div>
+
+  <section class="grid">
+    <div class="card"><div class="label">조합원 수</div><div class="value" id="memberCount">-</div><div class="unit">명</div></div>
+    <div class="card"><div class="label">예적금 잔액</div><div class="value" id="depositTotal">-</div><div class="unit">원</div></div>
+    <div class="card"><div class="label">대출 총액</div><div class="value" id="loanTotal">-</div><div class="unit">원</div></div>
+    <div class="card"><div class="label">거래 건수</div><div class="value" id="transactionCount">-</div><div class="unit">건</div></div>
+  </section>
+
+  <section class="charts">
+    <div class="card">
+      <div class="label">지점별 조합원 수</div>
+      <div class="chartbox"><canvas id="branchChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="label">대출 상태별 건수</div>
+      <div class="chartbox"><canvas id="loanStatusChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="label">지점별 예적금 총액</div>
+      <div class="chartbox"><canvas id="depositBranchChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="label">기관별 1년 정기예금 금리</div>
+      <div class="chartbox"><canvas id="rateChart"></canvas></div>
+    </div>
+  </section>
+
+  <section class="section card">
+    <div class="toolbar">
+      <h2>조합원 목록</h2>
+      <div class="toolbar-left">
+        <input id="memberSearch" placeholder="이름 또는 조합원번호 검색" />
+        <select id="branchFilter"><option value="">전체 지점</option></select>
+      </div>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>조합원번호</th><th>이름</th><th>생년월일</th><th>성별</th><th>가입일</th><th>지점</th></tr></thead><tbody id="memberTable"></tbody></table></div>
+  </section>
+
+  <section class="section card">
+    <div class="toolbar"><h2>대출 현황</h2><select id="loanFilter"><option value="">전체 상태</option></select></div>
+    <div class="table-wrap"><table><thead><tr><th>대출번호</th><th>조합원</th><th>지점</th><th>대출종류</th><th>대출금액</th><th>금리</th><th>실행일</th><th>만기일</th><th>상태</th></tr></thead><tbody id="loanTable"></tbody></table></div>
+  </section>
+
+  <section class="section card">
+    <div class="toolbar"><h2>은행권 금리 비교</h2><span class="status" id="rateMeta"></span></div>
+    <div class="table-wrap"><table><thead><tr><th>조사월</th><th>기관</th><th>권역</th><th>상품명</th><th>기본금리</th><th>최고우대금리</th><th>우대조건</th></tr></thead><tbody id="rateTable"></tbody></table></div>
+  </section>
+
+  <div class="foot">마지막 조회: <span id="lastUpdated">-</span></div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://lqllsxpivccylmwlnpjn.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_qvWkya-l5q8wtb0rn-YBrA_IDFsX7P-';
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let members = [], branches = [], deposits = [], loans = [], rates = [];
+  let charts = {};
+
+  const money = n => new Intl.NumberFormat('ko-KR').format(Number(n || 0));
+  const num = n => new Intl.NumberFormat('ko-KR').format(Number(n || 0));
+  const dateFmt = v => v ? String(v).slice(0,10) : '-';
+
+  async function loadData(){
+    setError('');
+    setStatus('데이터를 불러오는 중...');
+    try {
+      const results = await Promise.all([
+        client.from('members').select('*').order('member_id'),
+        client.from('branches').select('*').order('branch_id'),
+        client.from('deposit_accounts').select('*').order('account_id'),
+        client.from('loans').select('*').order('loan_id'),
+        client.from('banks_rate').select('*').order('survey_month', {ascending:false}).order('institution_name')
+      ]);
+      const [m,b,d,l,r] = results;
+      const firstErr = results.find(x => x.error);
+      if(firstErr) throw firstErr.error;
+      members = m.data || []; branches = b.data || []; deposits = d.data || []; loans = l.data || []; rates = r.data || [];
+      const tx = await client.from('transactions').select('transaction_id', {count:'exact', head:true});
+      if(tx.error) throw tx.error;
+
+      document.getElementById('memberCount').textContent = num(members.length);
+      document.getElementById('depositTotal').textContent = money(deposits.reduce((s,x)=>s+Number(x.balance||0),0));
+      document.getElementById('loanTotal').textContent = money(loans.reduce((s,x)=>s+Number(x.loan_amount||0),0));
+      document.getElementById('transactionCount').textContent = num(tx.count || 0);
+
+      populateFilters();
+      renderCharts(); renderTables();
+      const maxRate = rates.length ? rates[0].survey_month : '-';
+      document.getElementById('rateMeta').textContent = maxRate ? `최근 조사월: ${maxRate}` : '';
+      document.getElementById('lastUpdated').textContent = new Date().toLocaleString('ko-KR');
+      setStatus(`조회 완료 · 조합원 ${members.length}명 / 지점 ${branches.length}개 / 계좌 ${deposits.length}개 / 대출 ${loans.length}건 / 금리 ${rates.length}건`);
+    } catch(e){
+      console.error(e);
+      setStatus('데이터 조회 실패');
+      setError(`Supabase 조회 오류: ${e.message || e}`);
+    }
+  }
+
+  function setStatus(t){document.getElementById('status').textContent=t}
+  function setError(t){const el=document.getElementById('errorBox'); el.textContent=t; el.style.display=t?'block':'none'}
+  function branchName(id){return branches.find(b=>Number(b.branch_id)===Number(id))?.branch_name || `지점 ${id}`}
+  function memberName(id){return members.find(m=>Number(m.member_id)===Number(id))?.name || `조합원 ${id}`}
+
+  function populateFilters(){
+    const bf=document.getElementById('branchFilter');
+    bf.innerHTML='<option value="">전체 지점</option>'+branches.map(b=>`<option value="${b.branch_id}">${b.branch_name}</option>`).join('');
+    const lf=document.getElementById('loanFilter');
+    const statuses=[...new Set(loans.map(x=>x.status).filter(Boolean))];
+    lf.innerHTML='<option value="">전체 상태</option>'+statuses.map(s=>`<option value="${s}">${s}</option>`).join('');
+  }
+
+  function renderCharts(){
+    Object.values(charts).forEach(c=>c.destroy());
+    const byBranch = branches.map(b=>({name:b.branch_name, value:members.filter(m=>Number(m.branch_id)===Number(b.branch_id)).length}));
+    charts.branch = new Chart(document.getElementById('branchChart'),{type:'bar',data:{labels:byBranch.map(x=>x.name),datasets:[{label:'조합원 수',data:byBranch.map(x=>x.value),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+
+    const statuses=[...new Set(loans.map(x=>x.status).filter(Boolean))];
+    charts.loanStatus = new Chart(document.getElementById('loanStatusChart'),{type:'doughnut',data:{labels:statuses,datasets:[{data:statuses.map(s=>loans.filter(x=>x.status===s).length)}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
+
+    const byDepBranch = branches.map(b=>({name:b.branch_name, value:deposits.filter(d=>Number(d.branch_id)===Number(b.branch_id)).reduce((s,x)=>s+Number(x.balance||0),0)}));
+    charts.deposit = new Chart(document.getElementById('depositBranchChart'),{type:'bar',data:{labels:byDepBranch.map(x=>x.name),datasets:[{label:'잔액',data:byDepBranch.map(x=>x.value),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>new Intl.NumberFormat('ko-KR',{notation:'compact'}).format(v)+'원'}}}}});
+
+    const latest = rates.slice().sort((a,b)=>String(a.survey_month).localeCompare(String(b.survey_month))).slice(-10);
+    charts.rate = new Chart(document.getElementById('rateChart'),{type:'bar',data:{labels:latest.map(x=>x.institution_name),datasets:[{label:'최고우대금리',data:latest.map(x=>Number(x.max_preferential_rate||0)),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>v+'%'}}}}});
+  }
+
+  function renderTables(){ renderMembers(); renderLoans(); renderRates(); }
+
+  function renderMembers(){
+    const q=document.getElementById('memberSearch').value.trim().toLowerCase();
+    const bid=document.getElementById('branchFilter').value;
+    const rows=members.filter(m=>{
+      const text=`${m.member_id} ${m.name||''}`.toLowerCase();
+      return (!q||text.includes(q)) && (!bid||String(m.branch_id)===bid);
+    });
+    document.getElementById('memberTable').innerHTML=rows.map(m=>`<tr><td>${m.member_id}</td><td>${m.name||'-'}</td><td>${dateFmt(m.birth_date)}</td><td>${m.gender||'-'}</td><td>${dateFmt(m.join_date)}</td><td>${branchName(m.branch_id)}</td></tr>`).join('') || '<tr><td colspan="6">조회 결과가 없습니다.</td></tr>';
+  }
+
+  function renderLoans(){
+    const status=document.getElementById('loanFilter').value;
+    const rows=loans.filter(l=>!status||l.status===status);
+    document.getElementById('loanTable').innerHTML=rows.map(l=>`<tr><td>${l.loan_id}</td><td>${memberName(l.member_id)}</td><td>${branchName(l.branch_id)}</td><td>${l.loan_type||'-'}</td><td>${money(l.loan_amount)}원</td><td>${l.interest_rate ?? '-'}%</td><td>${dateFmt(l.start_date)}</td><td>${dateFmt(l.due_date)}</td><td><span class="pill ${String(l.status).includes('연체')?'bad':String(l.status).includes('정상')?'good':''}">${l.status||'-'}</span></td></tr>`).join('') || '<tr><td colspan="9">조회 결과가 없습니다.</td></tr>';
+  }
+
+  function renderRates(){
+    document.getElementById('rateTable').innerHTML=rates.map(r=>`<tr><td>${dateFmt(r.survey_month)}</td><td>${r.institution_name||'-'}</td><td>${r.sector||'-'}</td><td>${r.product_name||'-'}</td><td>${r.base_rate ?? '-'}%</td><td>${r.max_preferential_rate ?? '-'}%</td><td>${r.preferential_conditions||'-'}</td></tr>`).join('') || '<tr><td colspan="7">데이터가 없습니다.</td></tr>';
+  }
+
+  document.getElementById('refreshBtn').addEventListener('click', loadData);
+  document.getElementById('memberSearch').addEventListener('input', renderMembers);
+  document.getElementById('branchFilter').addEventListener('change', renderMembers);
+  document.getElementById('loanFilter').addEventListener('change', renderLoans);
+  loadData();
+</script>
+</body>
+</html>
