@@ -58,6 +58,43 @@
     @media (max-width: 1000px){.grid,.rate-grid{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr}}
     @media (max-width: 620px){.wrap{padding:16px}.grid,.rate-grid{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}input{width:100%;min-width:0}}
     .subtle{font-size:12px;font-weight:500;color:#6b7280;}
+
+    .write-section{margin:22px 0 18px}
+    .write-section h2{font-size:18px;margin:0 0 6px}
+    .write-desc{font-size:12px;color:var(--muted);margin-bottom:12px}
+    .action-shell{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px;align-items:start}
+    .action-sidebar{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;position:sticky;top:14px}
+    .action-menu-btn{width:100%;border:0;background:transparent;text-align:left;padding:12px 13px;border-radius:9px;font-weight:700;color:#526577;cursor:pointer;margin:2px 0}
+    .action-menu-btn:hover{background:#f4f8fc;color:var(--blue)}
+    .action-menu-btn.active{background:#eaf3fb;color:var(--blue);box-shadow:inset 3px 0 0 var(--blue)}
+    .action-workspace{min-width:0}
+    .action-grid{display:block}
+    .action-card{display:none;background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
+    .action-card.active{display:block}
+    .action-card h3{font-size:15px;margin:0 0 14px}
+    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .form-grid .full{grid-column:1/-1}
+    .form-field label{display:block;font-size:11px;font-weight:700;color:#526577;margin:0 0 6px}
+    .form-field input,.form-field select{width:100%;min-width:0}
+    .form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+    .action-result{display:none;margin-top:10px;padding:9px 11px;border-radius:8px;font-size:12px}
+    .action-result.ok{display:block;background:#edf8ef;color:#176b2c;border:1px solid #cde9d3}
+    .action-result.bad{display:block;background:#fff0f0;color:#9a2e24;border:1px solid #f3c7c3}
+    .action-result.info{display:block;background:#eef6ff;color:#24527a;border:1px solid #cfe3f7}
+    .danger-note{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5}
+    @media (max-width:900px){.action-shell{grid-template-columns:1fr}.action-sidebar{position:static;display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.action-menu-btn{margin:0}}
+    @media (max-width:620px){.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}}
+
+  .confirm-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px}
+  .confirm-overlay.show{display:flex}
+  .confirm-box{width:min(460px,100%);background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(15,23,42,.25);padding:24px}
+  .confirm-box h3{margin:0 0 10px;font-size:18px;color:#0f2942}
+  .confirm-box p{margin:0;color:#475569;line-height:1.6;white-space:pre-line}
+  .confirm-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+  .confirm-actions button{min-width:88px;padding:10px 16px;border-radius:8px;border:1px solid #d7e0ea;font-weight:700;cursor:pointer}
+  .confirm-cancel{background:#fff;color:#475569}
+  .confirm-ok{background:#0868b8;color:#fff;border-color:#0868b8!important}
+
 </style>
 </head>
 <body>
@@ -74,7 +111,7 @@
       <input id="supabaseKeyInput" type="password" placeholder="sb_publishable_... 또는 anon key" autocomplete="off" />
     </div>
     <div class="connect-actions">
-      <button id="connectBtn" class="primary">연결 후 대시보드 열기</button>
+      <button type="button" id="connectBtn" class="primary">연결 후 대시보드 열기</button>
     </div>
     <div id="connectError" class="connect-error"></div>
     <div class="security-note">※ 브라우저용 Publishable Key(또는 legacy anon key)를 입력하세요. service_role/secret key는 브라우저에 입력하면 안 됩니다.</div>
@@ -85,9 +122,9 @@
   <header>
     <div>
       <h1>Supabase 테스트 DB 대시보드</h1>
-      <div class="sub">test project · 조회 전용 · 브라우저에서 Supabase 데이터를 직접 조회합니다.</div>
+      <div class="sub">Supabase 연결 프로젝트 · 조회 및 테스트 업무 입력 · 브라우저에서 Supabase 데이터를 직접 처리합니다.</div>
     </div>
-    <div style="display:flex;gap:8px"><button id="disconnectBtn">연결 해제</button><button id="refreshBtn">데이터 새로고침</button></div>
+    <div style="display:flex;gap:8px"><button type="button" id="disconnectBtn">연결 해제</button><button type="button" id="refreshBtn">데이터 새로고침</button></div>
   </header>
 
   <div id="errorBox" class="error"></div>
@@ -130,6 +167,76 @@
     </div>
   </section>
 
+
+  <section class="write-section">
+    <h2>조합원 · 수신 · 여신 업무 입력</h2>
+    <div class="write-desc">좌측 메뉴에서 업무를 선택하면 해당 입력 화면만 표시됩니다. 저장 전 확인창이 표시됩니다.</div>
+    <div class="action-shell">
+      <aside class="action-sidebar" aria-label="업무 메뉴">
+        <button type="button" class="action-menu-btn active" data-action-panel="memberPanel">조합원 가입</button>
+        <button type="button" class="action-menu-btn" data-action-panel="depositPanel">수신계좌 개설</button>
+        <button type="button" class="action-menu-btn" data-action-panel="loanPanel">여신계좌 생성</button>
+        <button type="button" class="action-menu-btn" data-action-panel="paymentPanel">추가 납입</button>
+      </aside>
+      <div class="action-workspace">
+      <div class="action-grid">
+      <div class="action-card active" id="memberPanel">
+        <h3>신규 조합원 가입</h3>
+        <div class="form-grid">
+          <div class="form-field"><label>이름</label><input id="newMemberName" placeholder="예: 홍길동"></div>
+          <div class="form-field"><label>생년월일</label><input id="newMemberBirth" type="date"></div>
+          <div class="form-field"><label>성별</label><select id="newMemberGender"><option value="">선택</option><option value="남">남</option><option value="여">여</option></select></div>
+          <div class="form-field"><label>가입 지점</label><select id="newMemberBranch"><option value="">지점 선택</option></select></div>
+          <div class="form-field"><label>가입일</label><input id="newMemberJoin" type="date"></div>
+          <div class="form-field"><label>전화번호</label><input id="newMemberPhone" placeholder="010-0000-0000"></div>
+        </div>
+        <div class="form-actions"><button type="button" class="primary" id="createMemberBtn">조합원 등록</button></div>
+        <div id="memberActionResult" class="action-result"></div>
+      </div>
+
+      <div class="action-card" id="depositPanel">
+        <h3>수신 계좌 개설</h3>
+        <div class="form-grid">
+          <div class="form-field full"><label>조합원</label><select id="depositMember"><option value="">조합원 선택</option></select></div>
+          <div class="form-field"><label>계좌 종류</label><input id="depositType" list="depositTypeList" placeholder="예: 정기적금"><datalist id="depositTypeList"></datalist></div>
+          <div class="form-field"><label>개설일</label><input id="depositOpenDate" type="date"></div>
+          <div class="form-field"><label>초기 잔액(원)</label><input id="depositBalance" type="number" min="0" step="1" placeholder="3000000"></div>
+          <div class="form-field"><label>금리(%)</label><input id="depositRate" type="number" min="0" step="0.01" placeholder="3.20"></div>
+        </div>
+        <div class="form-actions"><button type="button" class="primary" id="createDepositBtn">수신계좌 개설</button></div>
+        <div id="depositActionResult" class="action-result"></div>
+      </div>
+
+      <div class="action-card" id="loanPanel">
+        <h3>여신 계좌 생성</h3>
+        <div class="form-grid">
+          <div class="form-field full"><label>조합원</label><select id="loanMember"><option value="">조합원 선택</option></select></div>
+          <div class="form-field"><label>대출 종류</label><input id="loanTypeInput" list="loanTypeList" placeholder="예: 신용대출"><datalist id="loanTypeList"></datalist></div>
+          <div class="form-field"><label>대출금액(원)</label><input id="loanAmountInput" type="number" min="0" step="1" placeholder="10000000"></div>
+          <div class="form-field"><label>금리(%)</label><input id="loanRateInput" type="number" min="0" step="0.01" placeholder="4.50"></div>
+          <div class="form-field"><label>실행일</label><input id="loanStartDate" type="date"></div>
+          <div class="form-field"><label>만기일</label><input id="loanDueDate" type="date"></div>
+          <div class="form-field"><label>상태</label><select id="loanStatusInput"><option value="정상">정상</option><option value="연체">연체</option><option value="완제">완제</option></select></div>
+        </div>
+        <div class="form-actions"><button type="button" class="primary" id="createLoanBtn">여신계좌 생성</button></div>
+        <div id="loanActionResult" class="action-result"></div>
+      </div>
+
+      <div class="action-card" id="paymentPanel">
+        <h3>수신 계좌 추가 납입</h3>
+        <div class="form-grid">
+          <div class="form-field full"><label>수신 계좌</label><select id="paymentAccount"><option value="">계좌 선택</option></select></div>
+          <div class="form-field full"><label>추가 납입액(원)</label><input id="paymentAmount" type="number" min="1" step="1" placeholder="2000000"></div>
+        </div>
+        <div class="form-actions"><button type="button" class="primary" id="addPaymentBtn">추가 납입</button></div>
+        <div id="paymentActionResult" class="action-result"></div>
+        <div class="danger-note">※ 추가 납입 시 deposit_accounts 잔액을 증가시키고 transactions에 입금 거래를 추가합니다.</div>
+      </div>
+    </div>
+      </div>
+    </div>
+  </section>
+
   <section class="section card">
     <div class="toolbar">
       <h2>조합원 목록 <span class="subtle">· 최근 가입자 5명</span></h2>
@@ -158,6 +265,18 @@
   </section>
 
   <div class="foot">마지막 조회: <span id="lastUpdated">-</span></div>
+</div>
+
+
+<div id="confirmOverlay" class="confirm-overlay" aria-hidden="true">
+  <div class="confirm-box" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <h3 id="confirmTitle">처리 확인</h3>
+    <p id="confirmMessage"></p>
+    <div class="confirm-actions">
+      <button type="button" id="confirmCancel" class="confirm-cancel">취소</button>
+      <button type="button" id="confirmOk" class="confirm-ok">확인</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -211,6 +330,7 @@
     document.getElementById('connectScreen').classList.remove('hidden');
     document.getElementById('supabaseUrlInput').value='';
     document.getElementById('supabaseKeyInput').value='';
+    document.querySelectorAll('.action-result').forEach(el=>{el.className='action-result';el.textContent='';});
     document.getElementById('supabaseUrlInput').focus();
   }
 
@@ -267,6 +387,16 @@
     const rf=document.getElementById('rateSectorFilter');
     const sectors=[...new Set(rates.map(x=>x.sector).filter(Boolean))];
     rf.innerHTML='<option value="">전체 권역</option>'+sectors.map(s=>`<option value="${s}">${s}</option>`).join('');
+
+    const branchOptions=branches.map(b=>`<option value="${b.branch_id}">${b.branch_name}</option>`).join('');
+    document.getElementById('newMemberBranch').innerHTML='<option value="">지점 선택</option>'+branchOptions;
+    const memberOptions=[...members].sort((a,b)=>Number(a.member_id)-Number(b.member_id)).map(m=>`<option value="${m.member_id}">${m.member_id} · ${m.name} · ${branchName(m.branch_id)}</option>`).join('');
+    document.getElementById('depositMember').innerHTML='<option value="">조합원 선택</option>'+memberOptions;
+    document.getElementById('loanMember').innerHTML='<option value="">조합원 선택</option>'+memberOptions;
+    const accountOptions=[...deposits].sort((a,b)=>Number(a.account_id)-Number(b.account_id)).map(a=>`<option value="${a.account_id}">${a.account_id} · ${memberName(a.member_id)} · ${a.account_type} · 잔액 ${money(a.balance)}원</option>`).join('');
+    document.getElementById('paymentAccount').innerHTML='<option value="">계좌 선택</option>'+accountOptions;
+    document.getElementById('depositTypeList').innerHTML=[...new Set(deposits.map(d=>d.account_type).filter(Boolean))].map(v=>`<option value="${v}"></option>`).join('');
+    document.getElementById('loanTypeList').innerHTML=[...new Set(loans.map(l=>l.loan_type).filter(Boolean))].map(v=>`<option value="${v}"></option>`).join('');
   }
 
   function renderCharts(){
@@ -338,6 +468,229 @@
     }).join('') || '<tr><td colspan="8">데이터가 없습니다.</td></tr>';
   }
 
+  function actionMessage(id, ok, text){
+    const el=document.getElementById(id);
+    el.className='action-result '+(ok?'ok':'bad');
+    el.textContent=text;
+  }
+
+  function askConfirm(message, title='처리 확인'){
+    return new Promise(resolve=>{
+      const overlay=document.getElementById('confirmOverlay');
+      const msg=document.getElementById('confirmMessage');
+      const titleEl=document.getElementById('confirmTitle');
+      const ok=document.getElementById('confirmOk');
+      const cancel=document.getElementById('confirmCancel');
+      titleEl.textContent=title;
+      msg.textContent=message;
+      overlay.classList.add('show');
+      overlay.setAttribute('aria-hidden','false');
+
+      const finish=(value)=>{
+        overlay.classList.remove('show');
+        overlay.setAttribute('aria-hidden','true');
+        ok.removeEventListener('click', onOk);
+        cancel.removeEventListener('click', onCancel);
+        overlay.removeEventListener('click', onOverlay);
+        document.removeEventListener('keydown', onKey);
+        resolve(value);
+      };
+      const onOk=()=>finish(true);
+      const onCancel=()=>finish(false);
+      const onOverlay=(e)=>{ if(e.target===overlay) finish(false); };
+      const onKey=(e)=>{ if(e.key==='Escape') finish(false); };
+      ok.addEventListener('click', onOk);
+      cancel.addEventListener('click', onCancel);
+      overlay.addEventListener('click', onOverlay);
+      document.addEventListener('keydown', onKey);
+      setTimeout(()=>ok.focus(),0);
+    });
+  }
+
+  function nextId(rows, key){
+    return rows.reduce((m,r)=>Math.max(m,Number(r[key]||0)),0)+1;
+  }
+
+  function todayValue(){
+    const d=new Date();
+    const local=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+    return local.toISOString().slice(0,10);
+  }
+
+  function selectedMember(id){
+    const memberId=Number(document.getElementById(id).value);
+    return members.find(m=>Number(m.member_id)===memberId);
+  }
+
+  async function createMember(event){
+    if(event){ event.preventDefault(); event.stopPropagation(); }
+    const resultId='memberActionResult';
+    if(!client){ actionMessage(resultId,false,'Supabase 연결이 없습니다. 다시 연결해 주세요.'); return; }
+
+    const branchValue=document.getElementById('newMemberBranch').value;
+    const payload={
+      member_id:nextId(members,'member_id'),
+      name:document.getElementById('newMemberName').value.trim(),
+      birth_date:document.getElementById('newMemberBirth').value,
+      gender:document.getElementById('newMemberGender').value,
+      join_date:document.getElementById('newMemberJoin').value,
+      branch_id:branchValue ? Number(branchValue) : null,
+      phone:document.getElementById('newMemberPhone').value.trim()
+    };
+
+    if(!payload.name||!payload.birth_date||!payload.gender||!payload.join_date||payload.branch_id===null||!payload.phone){
+      actionMessage(resultId,false,'필수 항목을 모두 입력해 주세요.');
+      return;
+    }
+
+    if(!(await askConfirm(`${payload.name} 조합원을 ${branchName(payload.branch_id)}에 등록하시겠습니까?`, '조합원 등록 확인'))){
+      actionMessage(resultId,false,'조합원 등록이 취소되었습니다.');
+      return;
+    }
+
+    const btn=document.getElementById('createMemberBtn');
+    btn.disabled=true;
+    const originalText=btn.textContent;
+    btn.textContent='등록 중...';
+    const resultEl=document.getElementById(resultId);
+    resultEl.className='action-result info';
+    resultEl.textContent='조합원 정보를 등록하고 있습니다.';
+
+    try{
+      const {data,error}=await client.from('members').insert(payload).select('member_id,name').single();
+      if(error) throw error;
+      ['newMemberName','newMemberBirth','newMemberPhone'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('newMemberGender').value='';
+      await loadData();
+      actionMessage(resultId,true,`조합원 ${data?.member_id ?? payload.member_id}번(${data?.name ?? payload.name})이 등록되었습니다.`);
+    }catch(e){
+      console.error('createMember failed',e);
+      actionMessage(resultId,false,`등록 실패: ${e.message||e}`);
+    }finally{
+      btn.disabled=false;
+      btn.textContent=originalText;
+    }
+  }
+
+  async function createDeposit(){
+    if(!client) return;
+    const m=selectedMember('depositMember');
+    const payload={
+      account_id:nextId(deposits,'account_id'),
+      member_id:m?.member_id,
+      branch_id:m?.branch_id,
+      account_type:document.getElementById('depositType').value.trim(),
+      open_date:document.getElementById('depositOpenDate').value,
+      balance:Number(document.getElementById('depositBalance').value),
+      interest_rate:Number(document.getElementById('depositRate').value)
+    };
+    if(!m||!payload.account_type||!payload.open_date||!Number.isFinite(payload.balance)||payload.balance<0||!Number.isFinite(payload.interest_rate)){actionMessage('depositActionResult',false,'필수 항목과 금액/금리를 확인해 주세요.');return;}
+    if(!(await askConfirm(`${m.name} 조합원의 ${payload.account_type} 계좌를 개설하시겠습니까?`, '수신계좌 개설 확인'))) return;
+    const btn=document.getElementById('createDepositBtn'); btn.disabled=true;
+    try{
+      const {error}=await client.from('deposit_accounts').insert(payload);
+      if(error) throw error;
+      actionMessage('depositActionResult',true,`수신계좌 ${payload.account_id}번이 개설되었습니다.`);
+      await loadData();
+    }catch(e){actionMessage('depositActionResult',false,`개설 실패: ${e.message||e}`);}finally{btn.disabled=false;}
+  }
+
+  async function createLoan(){
+    if(!client) return;
+    const m=selectedMember('loanMember');
+    const payload={
+      loan_id:nextId(loans,'loan_id'),
+      member_id:m?.member_id,
+      branch_id:m?.branch_id,
+      loan_type:document.getElementById('loanTypeInput').value.trim(),
+      loan_amount:Number(document.getElementById('loanAmountInput').value),
+      interest_rate:Number(document.getElementById('loanRateInput').value),
+      start_date:document.getElementById('loanStartDate').value,
+      due_date:document.getElementById('loanDueDate').value,
+      status:document.getElementById('loanStatusInput').value
+    };
+    if(!m||!payload.loan_type||!payload.start_date||!payload.due_date||!Number.isFinite(payload.loan_amount)||payload.loan_amount<=0||!Number.isFinite(payload.interest_rate)){actionMessage('loanActionResult',false,'필수 항목과 금액/금리를 확인해 주세요.');return;}
+    if(payload.due_date<payload.start_date){actionMessage('loanActionResult',false,'만기일은 실행일 이후여야 합니다.');return;}
+    if(!(await askConfirm(`${m.name} 조합원의 ${payload.loan_type} ${money(payload.loan_amount)}원 대출을 생성하시겠습니까?`, '여신계좌 생성 확인'))) return;
+    const btn=document.getElementById('createLoanBtn'); btn.disabled=true;
+    try{
+      const {error}=await client.from('loans').insert(payload);
+      if(error) throw error;
+      actionMessage('loanActionResult',true,`대출 ${payload.loan_id}번이 생성되었습니다.`);
+      await loadData();
+    }catch(e){actionMessage('loanActionResult',false,`생성 실패: ${e.message||e}`);}finally{btn.disabled=false;}
+  }
+
+  async function addPayment(){
+    const resultId='paymentActionResult';
+    if(!client){ actionMessage(resultId,false,'Supabase 연결이 없습니다. 다시 연결해 주세요.'); return; }
+
+    const accountId=Number(document.getElementById('paymentAccount').value);
+    const amount=Number(document.getElementById('paymentAmount').value);
+    if(!accountId||!Number.isFinite(amount)||amount<=0){
+      actionMessage(resultId,false,'계좌와 추가 납입액을 확인해 주세요.');
+      return;
+    }
+
+    const local=deposits.find(a=>Number(a.account_id)===accountId);
+    if(!local){
+      actionMessage(resultId,false,'선택한 계좌 정보를 찾을 수 없습니다. 새로고침 후 다시 선택해 주세요.');
+      return;
+    }
+
+    if(!(await askConfirm(`${memberName(local.member_id)}의 ${local.account_type} 계좌에 ${money(amount)}원을 추가 납입하시겠습니까?`, '추가 납입 확인'))){
+      actionMessage(resultId,false,'추가 납입이 취소되었습니다.');
+      return;
+    }
+
+    const btn=document.getElementById('addPaymentBtn');
+    const originalText=btn.textContent;
+    btn.disabled=true;
+    btn.textContent='처리 중...';
+    actionMessage(resultId,true,'잔액과 거래내역을 함께 반영하고 있습니다.');
+
+    try{
+      const {data,error}=await client.rpc('add_deposit_payment',{
+        p_account_id: accountId,
+        p_amount: amount
+      });
+      if(error) throw error;
+
+      const row=Array.isArray(data)?data[0]:data;
+      const newBalance=Number(row?.new_balance ?? (Number(local.balance||0)+amount));
+      const transactionId=row?.transaction_id ?? '-';
+      actionMessage(resultId,true,`${money(amount)}원 추가 납입 완료 · 새 잔액 ${money(newBalance)}원 · 거래번호 ${transactionId}`);
+      document.getElementById('paymentAmount').value='';
+      await loadData();
+      document.getElementById('paymentAccount').value=String(accountId);
+    }catch(e){
+      console.error('addPayment failed',e);
+      actionMessage(resultId,false,`추가 납입 실패: ${e.message||e}`);
+    }finally{
+      btn.disabled=false;
+      btn.textContent=originalText;
+    }
+  }
+
+  function initActionDefaults(){
+    const today=todayValue();
+    ['newMemberJoin','depositOpenDate','loanStartDate'].forEach(id=>{const el=document.getElementById(id); if(el&&!el.value) el.value=today;});
+  }
+
+  function switchActionPanel(panelId){
+    document.querySelectorAll('.action-card').forEach(card=>card.classList.toggle('active', card.id===panelId));
+    document.querySelectorAll('.action-menu-btn').forEach(btn=>btn.classList.toggle('active', btn.dataset.actionPanel===panelId));
+    const active=document.getElementById(panelId);
+    if(active){
+      const first=active.querySelector('input, select');
+      if(first) setTimeout(()=>first.focus(),0);
+    }
+  }
+
+  document.querySelectorAll('.action-menu-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>switchActionPanel(btn.dataset.actionPanel));
+  });
+
   document.getElementById('connectBtn').addEventListener('click', connectDashboard);
   document.getElementById('supabaseUrlInput').addEventListener('keydown', e=>{if(e.key==='Enter') connectDashboard()});
   document.getElementById('supabaseKeyInput').addEventListener('keydown', e=>{if(e.key==='Enter') connectDashboard()});
@@ -347,6 +700,11 @@
   document.getElementById('branchFilter').addEventListener('change', renderMembers);
   document.getElementById('loanFilter').addEventListener('change', renderLoans);
   document.getElementById('rateSectorFilter').addEventListener('change', renderRates);
+  document.getElementById('createMemberBtn').onclick = createMember;
+  document.getElementById('createDepositBtn').addEventListener('click', createDeposit);
+  document.getElementById('createLoanBtn').addEventListener('click', createLoan);
+  document.getElementById('addPaymentBtn').addEventListener('click', addPayment);
+  initActionDefaults();
   document.getElementById('supabaseUrlInput').focus();
 </script>
 </body>
