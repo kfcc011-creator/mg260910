@@ -11,6 +11,19 @@
     *{box-sizing:border-box}
     body{margin:0;font-family:Arial,"Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink)}
     .wrap{max-width:1400px;margin:0 auto;padding:28px}
+    .hidden{display:none!important}
+    .connect-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#f4f8fc 0%,#eef3f8 100%)}
+    .connect-card{width:min(520px,100%);background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px;box-shadow:0 16px 40px rgba(23,50,77,.10)}
+    .connect-card h1{font-size:24px;margin-bottom:8px}
+    .connect-card p{margin:0 0 22px;color:var(--muted);font-size:13px;line-height:1.6}
+    .field{margin-bottom:14px}
+    .field label{display:block;font-size:12px;font-weight:700;color:#526577;margin-bottom:7px}
+    .field input{width:100%;min-width:0;padding:11px 12px}
+    .connect-actions{display:flex;gap:8px;align-items:center;margin-top:18px}
+    .primary{background:var(--blue);color:#fff;border-color:var(--blue);flex:1}
+    .primary:hover{background:#004d91;border-color:#004d91}
+    .connect-error{display:none;margin-top:14px;padding:10px 12px;border-radius:8px;background:#fff0f0;color:#9a2e24;border:1px solid #f3c7c3;font-size:12px}
+    .security-note{margin-top:14px;font-size:11px;color:var(--muted);line-height:1.5}
     header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:20px}
     h1{margin:0;font-size:25px}
     .sub{color:var(--muted);font-size:13px;margin-top:6px}
@@ -47,13 +60,33 @@
   </style>
 </head>
 <body>
-<div class="wrap">
+<div id="connectScreen" class="connect-screen">
+  <div class="connect-card">
+    <h1>Supabase 대시보드 연결</h1>
+    <p>대시보드를 열려면 사용할 Supabase 프로젝트의 URL과 Publishable Key를 입력하세요. 연결이 확인된 뒤에만 데이터 화면이 표시됩니다.</p>
+    <div class="field">
+      <label for="supabaseUrlInput">Supabase Project URL</label>
+      <input id="supabaseUrlInput" type="url" placeholder="https://your-project.supabase.co" autocomplete="off" />
+    </div>
+    <div class="field">
+      <label for="supabaseKeyInput">Publishable Key</label>
+      <input id="supabaseKeyInput" type="password" placeholder="sb_publishable_... 또는 anon key" autocomplete="off" />
+    </div>
+    <div class="connect-actions">
+      <button id="connectBtn" class="primary">연결 후 대시보드 열기</button>
+    </div>
+    <div id="connectError" class="connect-error"></div>
+    <div class="security-note">※ 브라우저용 Publishable Key(또는 legacy anon key)를 입력하세요. service_role/secret key는 브라우저에 입력하면 안 됩니다.</div>
+  </div>
+</div>
+
+<div id="dashboard" class="wrap hidden">
   <header>
     <div>
       <h1>Supabase 테스트 DB 대시보드</h1>
       <div class="sub">test project · 조회 전용 · 브라우저에서 Supabase 데이터를 직접 조회합니다.</div>
     </div>
-    <button id="refreshBtn">데이터 새로고침</button>
+    <div style="display:flex;gap:8px"><button id="disconnectBtn">연결 해제</button><button id="refreshBtn">데이터 새로고침</button></div>
   </header>
 
   <div id="errorBox" class="error"></div>
@@ -127,9 +160,7 @@
 </div>
 
 <script>
-  const SUPABASE_URL = 'https://lqllsxpivccylmwlnpjn.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_qvWkya-l5q8wtb0rn-YBrA_IDFsX7P-';
-  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  let client = null;
 
   let members = [], branches = [], deposits = [], loans = [], rates = [];
   let charts = {};
@@ -138,7 +169,52 @@
   const num = n => new Intl.NumberFormat('ko-KR').format(Number(n || 0));
   const dateFmt = v => v ? String(v).slice(0,10) : '-';
 
+  async function connectDashboard(){
+    const url = document.getElementById('supabaseUrlInput').value.trim().replace(/\/$/, '');
+    const key = document.getElementById('supabaseKeyInput').value.trim();
+    const err = document.getElementById('connectError');
+    const btn = document.getElementById('connectBtn');
+    err.style.display='none'; err.textContent='';
+    if(!url || !key){
+      err.textContent='Supabase URL과 Publishable Key를 모두 입력해 주세요.'; err.style.display='block'; return;
+    }
+    if(!/^https:\/\/[^/]+\.supabase\.co$/i.test(url)){
+      err.textContent='Supabase Project URL 형식을 확인해 주세요. 예: https://xxxx.supabase.co'; err.style.display='block'; return;
+    }
+    if(key.startsWith('sb_secret_')){
+      err.textContent='Secret key는 브라우저에서 사용할 수 없습니다. Publishable Key를 입력해 주세요.'; err.style.display='block'; return;
+    }
+    btn.disabled=true; btn.textContent='연결 확인 중...';
+    try{
+      const testClient = window.supabase.createClient(url, key, { auth:{persistSession:false, autoRefreshToken:false, detectSessionInUrl:false} });
+      const { error } = await testClient.from('branches').select('branch_id').limit(1);
+      if(error) throw error;
+      client = testClient;
+      document.getElementById('connectScreen').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      document.getElementById('supabaseKeyInput').value='';
+      await loadData();
+    }catch(e){
+      client=null;
+      err.textContent=`연결 실패: ${e.message || e}`; err.style.display='block';
+    }finally{
+      btn.disabled=false; btn.textContent='연결 후 대시보드 열기';
+    }
+  }
+
+  function disconnectDashboard(){
+    client=null;
+    members=[]; branches=[]; deposits=[]; loans=[]; rates=[];
+    Object.values(charts).forEach(c=>c.destroy()); charts={};
+    document.getElementById('dashboard').classList.add('hidden');
+    document.getElementById('connectScreen').classList.remove('hidden');
+    document.getElementById('supabaseUrlInput').value='';
+    document.getElementById('supabaseKeyInput').value='';
+    document.getElementById('supabaseUrlInput').focus();
+  }
+
   async function loadData(){
+    if(!client) return;
     setError('');
     setStatus('데이터를 불러오는 중...');
     try {
@@ -248,12 +324,16 @@
     }).join('') || '<tr><td colspan="8">데이터가 없습니다.</td></tr>';
   }
 
+  document.getElementById('connectBtn').addEventListener('click', connectDashboard);
+  document.getElementById('supabaseUrlInput').addEventListener('keydown', e=>{if(e.key==='Enter') connectDashboard()});
+  document.getElementById('supabaseKeyInput').addEventListener('keydown', e=>{if(e.key==='Enter') connectDashboard()});
+  document.getElementById('disconnectBtn').addEventListener('click', disconnectDashboard);
   document.getElementById('refreshBtn').addEventListener('click', loadData);
   document.getElementById('memberSearch').addEventListener('input', renderMembers);
   document.getElementById('branchFilter').addEventListener('change', renderMembers);
   document.getElementById('loanFilter').addEventListener('change', renderLoans);
   document.getElementById('rateSectorFilter').addEventListener('change', renderRates);
-  loadData();
+  document.getElementById('supabaseUrlInput').focus();
 </script>
 </body>
 </html>
